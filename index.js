@@ -4,7 +4,10 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
+const { default: mongoose } = require('mongoose');
 const port = process.env.PORT || 5000;
+
+
 
 // middlewares
 app.use(cors());
@@ -29,6 +32,7 @@ async function run() {
         // await client.connect();
 
         const cardCollection = client.db("july").collection("cards");
+        const galleryCollection = client.db("july").collection("gallery");
         const userCollection = client.db("july").collection("users");
 
 
@@ -257,6 +261,7 @@ async function run() {
                     nowHealth: item.nowHealth,  /* new sec*/
                     govtHelp: item.govtHelp,    /* new sec*/
                     image: item.display_url,
+                    media: item.secure_url,     /* new sec*/
                     father: item.father,
                     mother: item.mother,
                     address: item.address,
@@ -275,10 +280,26 @@ async function run() {
             res.send(result);
         });
 
+        
+
+        // gallery related apis
+        app.get('/gallery', async (req, res) => {
+            const result = await galleryCollection.find().toArray();
+            res.send(result);
+        });
+
+
+        app.post('/gallery', async (req, res) => {
+            const item = req.body;
+            const result = await galleryCollection.insertOne(item);
+            console.log('successfully added in the database', result);
+            res.send(result);
+        });
 
 
 
 
+ 
 
 
         // Send a ping to confirm a successful connection
