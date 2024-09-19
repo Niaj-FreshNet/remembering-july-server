@@ -4,7 +4,6 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
-const { default: mongoose } = require('mongoose');
 const port = process.env.PORT || 5000;
 
 
@@ -260,8 +259,8 @@ async function run() {
                     hospital: item.hospital,
                     nowHealth: item.nowHealth,  /* new sec*/
                     govtHelp: item.govtHelp,    /* new sec*/
-                    image: item.display_url,
-                    media: item.secure_url,     /* new sec*/
+                    image: item.image,
+                    media: item.media,     /* new sec*/
                     father: item.father,
                     mother: item.mother,
                     address: item.address,
@@ -280,7 +279,7 @@ async function run() {
             res.send(result);
         });
 
-        
+
 
         // gallery related apis
         app.get('/gallery', async (req, res) => {
@@ -298,8 +297,53 @@ async function run() {
 
 
 
+        app.patch('/gallery/:id', async (req, res) => {
 
- 
+            try {
+                const id = req.params.id;
+                const status = req.body.status; // Get status from the request body
+                const filter = { _id: new ObjectId(id) };
+                const options = { upsert: true }
+                const updatedDoc = {
+                    $set: {
+                        status: status // Set the status to 'verified', 'fake', 'repeat' or 'inconvenience'
+                    }
+                };
+
+                const result = await galleryCollection.updateOne(filter, updatedDoc, options);
+                if (result.matchedCount === 0) {
+                    return res.status(404).send({ message: 'Media not found' });
+                }
+                res.send(result);
+            } catch (error) {
+                console.error(error);
+                res.status(500).send({ message: 'An error occurred while updating the media' });
+            }
+        });
+
+
+
+        app.patch('/gallery/:id', async (req, res) => {
+            const item = req.body;
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    media: item.secure_url,
+                    date: item.date,
+                    place: item.place,
+                    description: item.description
+                }
+            };
+            const result = await galleryCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
+        });
+
+
+
+
+
 
 
         // Send a ping to confirm a successful connection
