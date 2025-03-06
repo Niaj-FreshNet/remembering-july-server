@@ -213,7 +213,7 @@ async function run() {
         // });
 
 
-        app.patch('/cards/:id', async (req, res) => {
+        app.patch('/cards/status/:id', async (req, res) => {
 
             try {
                 const id = req.params.id;
@@ -275,9 +275,19 @@ async function run() {
                     relationWithInfoProvider: item.relationWithInfoProvider
                 }
             };
+            console.log(updateDoc)
             const result = await cardCollection.updateOne(filter, updateDoc, options);
+            console.log('result::::::::', result)
             res.send(result);
         });
+
+
+        app.delete('/cards/:id', verifyToken, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await cardCollection.deleteOne(query);
+            res.send(result);
+        })
 
 
 
